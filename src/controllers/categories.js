@@ -19,6 +19,7 @@ const createCatList = (categories, parentId = null) => {
       slug: cate.slug,
       parentId: cate.parentId,
       type: cate.type,
+      categoryImage: cate.categoryImage,
       children: createCatList(categories, cate._id),
     });
   }
@@ -34,7 +35,7 @@ exports.addCategory = async (req, res) => {
   };
 
   if (req.file) {
-    categoryObj.categoryImage = "/public/" + req.file.filename;
+    categoryObj.categoryImage = "/static/" + req.file.filename;
   }
 
   if (req.body.parentId) {
@@ -43,9 +44,9 @@ exports.addCategory = async (req, res) => {
 
   const cat = new Category(categoryObj);
   cat.save((error, category) => {
-    if (error) return res.status(400).json({ error });
+    if (error) return res.status(400).json({ message: error });
     if (category) {
-      return res.status(201).json({ category });
+      return res.status(201).json({ data: category });
     }
   });
 };
@@ -55,7 +56,7 @@ exports.getCategories = (req, res) => {
   Category.find({}).exec((err, categories) => {
     if (err) {
       return res.status(400).json({
-        error: error,
+        message: error,
       });
     }
 

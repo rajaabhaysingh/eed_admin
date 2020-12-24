@@ -43,7 +43,12 @@ const courseSchema = new mongoose.Schema(
           trim: true,
           required: true,
         },
-        contents: [
+        addedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        content: [
           {
             priority: {
               type: Number,
@@ -62,9 +67,16 @@ const courseSchema = new mongoose.Schema(
               type: Number,
               default: 0,
             },
-            file: {
-              type: String,
+            addedBy: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "User",
+              required: true,
             },
+            mediaFiles: [
+              {
+                type: String,
+              },
+            ],
           },
         ],
       },

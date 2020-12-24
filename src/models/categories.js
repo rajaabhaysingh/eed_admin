@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const categorySchema = new mongoose.Schema(
   {
     categoryName: {
@@ -14,7 +15,7 @@ const categorySchema = new mongoose.Schema(
     // type: {
     //   type: String,
     // },
-    // categoryImage: { type: String },
+    categoryImage: { type: String },
     parentId: {
       type: String,
     },

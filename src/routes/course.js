@@ -1,9 +1,15 @@
 const express = require("express");
 const { requireSignIn, adminMiddleware } = require("../commonMiddlewares");
-const { createCourse } = require("../controllers/course");
+const {
+  createCourse,
+  addCourseModule,
+  getAllCourses,
+  addModuleContent,
+} = require("../controllers/course");
 const multer = require("multer");
 const { nanoid } = require("nanoid");
 const path = require("path");
+const slugify = require("slugify");
 
 const router = express.Router();
 
@@ -12,25 +18,40 @@ const storage = multer.diskStorage({
     cb(null, path.join(path.dirname(__dirname), "uploads"));
   },
   filename: function (req, file, cb) {
-    cb(null, nanoid() + "-" + file.originalname);
+    cb(null, nanoid() + "-" + slugify(file.originalname));
   },
 });
 
 const upload = multer({ storage: storage });
 
-// for multifield multi-file uploads
-var multiFileFields = upload.fields([
-  { name: "thumbnail", maxCount: 1 },
-  { name: "contents", maxCount: 1023 },
-]);
-
+// create new course without any modules
 router.post(
   "/course/create",
   requireSignIn,
   adminMiddleware,
-  multiFileFields,
+  upload.single("thumbnail"),
   createCourse
 );
-// router.get("/category/get", getCategories);
+
+// add modules to previously created courses
+router.post(
+  "/course/create/add-new-module",
+  requireSignIn,
+  adminMiddleware,
+  upload.none(),
+  addCourseModule
+);
+
+// add modules to previously created courses
+router.post(
+  "/course/create/module/add-new-content",
+  requireSignIn,
+  adminMiddleware,
+  upload.array("mediaFiles"),
+  addModuleContent
+);
+
+// get list of all courses
+router.get("/course/get", getAllCourses);
 
 module.exports = router;

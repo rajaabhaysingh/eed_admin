@@ -1,5 +1,4 @@
-const { check } = require("express-validator");
-const { validationResult } = require("express-validator");
+const { check, validationResult } = require("express-validator");
 
 exports.validateAuthSignupRequest = [
   check("firstName").notEmpty().withMessage("Firstname cannot be empty"),
@@ -11,7 +10,7 @@ exports.validateAuthSignupRequest = [
 ];
 
 exports.validateAuthLoginRequest = [
-  check("email").isEmail().withMessage("Invalid email address"),
+  check("email").isEmail().withMessage("Invalid email address."),
 ];
 
 exports.isAuthRequestValidated = (req, res, next) => {

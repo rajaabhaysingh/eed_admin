@@ -3,75 +3,80 @@ const jwt = require("jsonwebtoken");
 
 // signup controller
 exports.signup = async (req, res) => {
-  try {
-    await User.findOne({ email: req.body.email }).exec((err, user) => {
-      if (user) {
+  await User.findOne({ email: req.body.email }).exec((err, user) => {
+    if (user) {
+      return res.status(400).json({
+        message: `${req.body.email} is already registered.`,
+      });
+    }
+
+    // --- else continue creating User ---
+    // destructure the request data first
+    const { firstName, middleName, lastName, email, password } = req.body;
+
+    const _user = new User({
+      firstName,
+      middleName,
+      lastName,
+      email,
+      password,
+      username: Math.random().toString(),
+      role: "admin",
+    });
+
+    _user.save((err, data) => {
+      if (err) {
+        console.log(err);
         return res.status(400).json({
-          message: `${req.body.email} is already registered.`,
+          message: `Something went wrong, couldn't create admin. [code: srcoadau]`,
         });
       }
 
-      // --- else continue creating User ---
-      // destructure the request data first
-      const { firstName, middleName, lastName, email, password } = req.body;
-
-      const _user = new User({
-        firstName,
-        middleName,
-        lastName,
-        email,
-        password,
-        username: Math.random().toString(),
-        role: "admin",
-      });
-
-      _user.save((err, data) => {
-        if (err) {
-          console.log(err);
-          return res.status(400).json({
-            message: `Something went wrong, couldn't create admin. [code: srcoadau]`,
-          });
-        }
-
-        if (data) {
-          return res.status(201).json({
-            message: "Admin created successfully.",
-          });
-        }
-      });
+      if (data) {
+        return res.status(201).json({
+          data: "Admin created successfully.",
+        });
+      }
     });
-  } catch (error) {
-    console.log("Error in admin signup: ", error.message);
-    return res.status(400).json({
-      message: error,
-    });
-  }
+  });
 };
 
 // login controller
 exports.login = async (req, res) => {
-  try {
-    await User.findOne({ email: req.body.email }).exec((err, user) => {
-      if (err) {
-        return res.status(400).json({
-          message: `User with email ${req.body.email} isn't registered.`,
-        });
-      }
+  await User.findOne({ email: req.body.email }).exec((err, user) => {
+    if (err) {
+      return res.status(400).json({
+        message: `User with email ${req.body.email} isn't registered.`,
+      });
+    }
 
-      // --- else continue logging in ---
-      if (user) {
-        if (user.authenticate(req.body.password) && user.role === "admin") {
-          const token = jwt.sign(
-            {
-              _id: user._id,
-              role: user.role,
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "1d" }
-          );
+    // --- else continue logging in ---
+    if (user) {
+      if (user.authenticate(req.body.password) && user.role === "admin") {
+        const token = jwt.sign(
+          {
+            _id: user._id,
+            role: user.role,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "1d" }
+        );
 
-          // destructure the user fields first
-          const {
+        // destructure the user fields first
+        const {
+          _id,
+          firstName,
+          middleName,
+          lastName,
+          role,
+          email,
+          fullname,
+          profilePicture,
+        } = user;
+
+        res.status(200).json({
+          token,
+          data: {
             _id,
             firstName,
             middleName,
@@ -80,43 +85,24 @@ exports.login = async (req, res) => {
             email,
             fullname,
             profilePicture,
-          } = user;
-
-          res.status(200).json({
-            token,
-            data: {
-              _id,
-              firstName,
-              middleName,
-              lastName,
-              role,
-              email,
-              fullname,
-              profilePicture,
-            },
+          },
+        });
+      } else {
+        if (user.role !== "admin") {
+          return res.status(400).json({
+            message: "User is not an admin.",
           });
         } else {
-          if (user.role !== "admin") {
-            return res.status(400).json({
-              message: "User is not an admin.",
-            });
-          } else {
-            // password didn't match
-            return res.status(400).json({
-              message: "Invalid email/password.",
-            });
-          }
+          // password didn't match
+          return res.status(400).json({
+            message: "Invalid email/password.",
+          });
         }
-      } else {
-        return res.status(400).json({
-          message: `Something went wrong. [code: srcoadau]`,
-        });
       }
-    });
-  } catch (error) {
-    console.log("Error in admin login: ", error.message);
-    return res.status(400).json({
-      message: error,
-    });
-  }
+    } else {
+      return res.status(400).json({
+        message: `Something went wrong. [code: srcoadau]`,
+      });
+    }
+  });
 };
