@@ -12,6 +12,11 @@ const courseSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
+    level: {
+      type: String,
+      enum: ["Basic", "Intermediate", "Advanced"],
+      default: "Basic",
+    },
     slug: {
       type: String,
       required: true,
@@ -25,6 +30,12 @@ const courseSchema = new mongoose.Schema(
       require: true,
       trim: true,
     },
+    prerequisites: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     offer: {
       type: Number,
     },
@@ -79,6 +90,22 @@ const courseSchema = new mongoose.Schema(
             ],
           },
         ],
+      },
+    ],
+    instructors: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        picture: {
+          type: String,
+        },
+        designation: {
+          type: String,
+          trim: true,
+        },
       },
     ],
     faqs: [
