@@ -17,7 +17,7 @@ exports.addCourseToCart = (req, res) => {
   Cart.findOne({ user: req.user._id }).exec((error, cart) => {
     if (error)
       return res.status(400).json({
-        message: error,
+        error: error,
       });
 
     if (cart) {
@@ -47,7 +47,7 @@ exports.addCourseToCart = (req, res) => {
 
           // respond that item is already available in cart
           return res.status(400).json({
-            message: "Course already present in cart.",
+            error: "Course already present in cart.",
           });
         } else {
           condition = { user: req.user._id };
@@ -71,7 +71,7 @@ exports.addCourseToCart = (req, res) => {
         .then((response) =>
           res.status(201).json({ data: "Course added to cart." })
         )
-        .catch((error) => res.status(400).json({ message: error }));
+        .catch((error) => res.status(400).json({ error: error }));
     } else {
       //if cart not exist then create a new cart
       const cart = new Cart({
@@ -82,7 +82,7 @@ exports.addCourseToCart = (req, res) => {
       cart.save((err, cart) => {
         if (err) {
           return res.status(400).json({
-            message: err,
+            error: err,
           });
         }
 

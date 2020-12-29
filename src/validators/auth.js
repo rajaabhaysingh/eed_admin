@@ -18,7 +18,7 @@ exports.isAuthRequestValidated = (req, res, next) => {
 
   if (validationErrors.array().length > 0) {
     return res.status(400).json({
-      error: validationErrors.array(),
+      error: validationErrors.array()[0].msg,
     });
   }
 

@@ -6,7 +6,7 @@ exports.signup = async (req, res) => {
   await User.findOne({ email: req.body.email }).exec((err, user) => {
     if (user) {
       return res.status(400).json({
-        message: `${req.body.email} is already registered.`,
+        error: `${req.body.email} is already registered.`,
       });
     }
 
@@ -28,7 +28,7 @@ exports.signup = async (req, res) => {
       if (err) {
         console.log(err);
         return res.status(400).json({
-          message: `Something went wrong, couldn't create admin. [code: srcoadau]`,
+          error: `Something went wrong, couldn't create admin. [code: srcoadau]`,
         });
       }
 
@@ -46,7 +46,7 @@ exports.login = async (req, res) => {
   await User.findOne({ email: req.body.email }).exec((err, user) => {
     if (err) {
       return res.status(400).json({
-        message: `User with email ${req.body.email} isn't registered.`,
+        error: `User with email ${req.body.email} isn't registered.`,
       });
     }
 
@@ -74,6 +74,8 @@ exports.login = async (req, res) => {
           profilePicture,
         } = user;
 
+        res.cookie("token", token, { expiresIn: "1d" });
+
         res.status(200).json({
           token,
           data: {
@@ -90,19 +92,27 @@ exports.login = async (req, res) => {
       } else {
         if (user.role !== "admin") {
           return res.status(400).json({
-            message: "User is not an admin.",
+            error: "Oops, User is not an admin.",
           });
         } else {
           // password didn't match
           return res.status(400).json({
-            message: "Invalid email/password.",
+            error: "Error: Invalid email/password.",
           });
         }
       }
     } else {
       return res.status(400).json({
-        message: `Something went wrong. [code: srcoadau]`,
+        error: `Error: You are not registered as an admin.`,
       });
     }
+  });
+};
+
+// logout
+exports.logout = (req, res, next) => {
+  res.clearCookie("token");
+  return res.status(200).json({
+    data: "Logged out successfully.",
   });
 };

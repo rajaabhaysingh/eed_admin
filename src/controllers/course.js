@@ -20,7 +20,7 @@ exports.createCourse = (req, res) => {
   });
 
   course.save((error, course) => {
-    if (error) return res.status(400).json({ message: error });
+    if (error) return res.status(400).json({ error: error });
 
     if (course) {
       res.status(201).json({
@@ -40,7 +40,7 @@ exports.addCourseModule = (req, res) => {
     if (err) {
       console.log("Error in finding course: ", err);
       return res.status(400).json({
-        message: err,
+        error: err,
       });
     }
 
@@ -51,7 +51,7 @@ exports.addCourseModule = (req, res) => {
         addedBy: addedBy,
       });
       course.save((error, course) => {
-        if (error) return res.status(400).json({ message: error });
+        if (error) return res.status(400).json({ error: error });
 
         if (course) {
           res.status(201).json({
@@ -82,7 +82,7 @@ exports.addModuleContent = (req, res) => {
     if (err) {
       console.log("Error in finding course: ", err);
       return res.status(404).json({
-        message: `Course with id: ${courseId} not found.`,
+        error: `Course with id: ${courseId} not found.`,
       });
     }
 
@@ -108,7 +108,7 @@ exports.addModuleContent = (req, res) => {
           });
 
           course.save((error, course) => {
-            if (error) return res.status(400).json({ message: error });
+            if (error) return res.status(400).json({ error: error });
 
             if (course) {
               res.status(201).json({
@@ -122,7 +122,7 @@ exports.addModuleContent = (req, res) => {
       if (!isModuleAvailable) {
         console.log("Error in finding module.");
         return res.status(404).json({
-          message: `Module with id: ${moduleId} not found.`,
+          error: `Module with id: ${moduleId} not found.`,
         });
       }
     }
@@ -134,7 +134,7 @@ exports.getAllCourses = (req, res) => {
   Course.find({}).exec((err, course) => {
     if (err) {
       return res.status(400).json({
-        message: error,
+        error: error,
       });
     }
 

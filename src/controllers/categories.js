@@ -15,12 +15,14 @@ const createCatList = (categories, parentId = null) => {
   for (let cate of tempCatList) {
     categoryList.push({
       _id: cate._id,
-      name: cate.name,
+      categoryName: cate.categoryName,
       slug: cate.slug,
       parentId: cate.parentId,
       type: cate.type,
       categoryImage: cate.categoryImage,
       children: createCatList(categories, cate._id),
+      updatedAt: cate.updatedAt,
+      createdAt: cate.createdAt,
     });
   }
 
@@ -44,7 +46,7 @@ exports.addCategory = async (req, res) => {
 
   const cat = new Category(categoryObj);
   cat.save((error, category) => {
-    if (error) return res.status(400).json({ message: error });
+    if (error) return res.status(400).json({ error: error });
     if (category) {
       return res.status(201).json({ data: category });
     }
@@ -56,7 +58,7 @@ exports.getCategories = (req, res) => {
   Category.find({}).exec((err, categories) => {
     if (err) {
       return res.status(400).json({
-        message: error,
+        error: error,
       });
     }
 

@@ -6,13 +6,13 @@ exports.signup = (req, res) => {
   User.findOne({ email: req.body.email }).exec((err, user) => {
     if (err) {
       return res.status(400).json({
-        message: `Some error occured during signup process. [code: srcoau]`,
+        error: `Some error occured during signup process. [code: srcoau]`,
       });
     }
 
     if (user) {
       return res.status(400).json({
-        message: `User with email ${req.body.email} already exists.`,
+        error: `User with email ${req.body.email} already exists.`,
       });
     }
 
@@ -33,7 +33,7 @@ exports.signup = (req, res) => {
       if (err) {
         console.log(err);
         return res.status(400).json({
-          message: `Something went wrong, couldn't create user. [code: srcoau]`,
+          error: `Something went wrong, couldn't create user. [code: srcoau]`,
         });
       }
 
@@ -51,7 +51,7 @@ exports.login = (req, res) => {
   User.findOne({ email: req.body.email }).exec((err, user) => {
     if (err) {
       return res.status(400).json({
-        message: `User with email ${req.body.email} isn't registered.`,
+        error: `User with email ${req.body.email} isn't registered.`,
       });
     }
 
@@ -95,12 +95,12 @@ exports.login = (req, res) => {
       } else {
         // password didn't match
         return res.status(400).json({
-          message: "Invalid email/password.",
+          error: "Invalid email/password.",
         });
       }
     } else {
       return res.status(400).json({
-        message: `Something went wrong. [code: srcoau]`,
+        error: `Something went wrong. [code: srcoau]`,
       });
     }
   });
