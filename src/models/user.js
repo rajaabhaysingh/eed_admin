@@ -54,15 +54,16 @@ const userSchema = mongoose.Schema(
     profilePicture: {
       type: String,
     },
+    coursesBought: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
   },
   { timestamps: true }
 );
 
 // --- setting/getting up virtual fields ---
 // setting virual field password
-userSchema.virtual("password").set(function (password) {
-  this.password_hash = bcrypt.hashSync(password, 10);
-});
+// userSchema.virtual("password").set(function (password) {
+//   this.password_hash = bcrypt.hashSync(password, 10);
+// });
 
 // getting virtual field fullName
 userSchema.virtual("fullName").get(function () {
@@ -71,8 +72,8 @@ userSchema.virtual("fullName").get(function () {
 
 // method(s) related to auth
 userSchema.methods = {
-  authenticate: function (password) {
-    return bcrypt.compareSync(password, this.password_hash);
+  authenticate: async function (password) {
+    return await bcrypt.compare(password, this.password_hash);
   },
 };
 

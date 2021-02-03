@@ -6,8 +6,11 @@ const Category = require("../models/categories");
 const createCatList = (categories, parentId = null) => {
   const categoryList = [];
   let tempCatList;
+
   if (parentId == null) {
-    tempCatList = categories.filter((cat) => cat.parentId == undefined);
+    tempCatList = categories.filter(
+      (cat) => cat.parentId == "undefined" || cat.parentId == undefined
+    );
   } else {
     tempCatList = categories.filter((cat) => cat.parentId == parentId);
   }
@@ -18,7 +21,7 @@ const createCatList = (categories, parentId = null) => {
       categoryName: cate.categoryName,
       slug: cate.slug,
       parentId: cate.parentId,
-      type: cate.type,
+      // type: cate.type,
       categoryImage: cate.categoryImage,
       children: createCatList(categories, cate._id),
       updatedAt: cate.updatedAt,
@@ -35,6 +38,21 @@ exports.addCategory = async (req, res) => {
     categoryName: req.body.categoryName,
     slug: `${slugify(req.body.categoryName)}`,
   };
+
+  // if category with same name already exists
+  await Category.findOne({ slug: categoryObj.slug }).exec((err, category) => {
+    if (err) {
+      return res.status(400).json({
+        error: err,
+      });
+    }
+
+    if (category) {
+      return res.status(400).json({
+        error: `Category with name ${categoryObj.categoryName} already exists.`,
+      });
+    }
+  });
 
   if (req.file) {
     categoryObj.categoryImage = "/static/" + req.file.filename;
@@ -58,7 +76,7 @@ exports.getCategories = (req, res) => {
   Category.find({}).exec((err, categories) => {
     if (err) {
       return res.status(400).json({
-        error: error,
+        error: err,
       });
     }
 
@@ -71,4 +89,92 @@ exports.getCategories = (req, res) => {
       });
     }
   });
+};
+
+// update single/multiple categories at once
+exports.updateCategories = async (req, res) => {
+  const { _id, categoryName, parentId, imgId } = req.body;
+  const updatedCategories = [];
+
+  // --- helper function ---
+  const getCatImage = (id) => {
+    for (let i = 0; i < imgId.length; i++) {
+      if (id == imgId[i]) {
+        return req.files[i];
+      }
+    }
+    return null;
+  };
+
+  if (categoryName instanceof Array) {
+    for (let i = 0; i < categoryName.length; i++) {
+      const category = {
+        categoryName: categoryName[i],
+        slug: slugify(categoryName[i]),
+      };
+      if (parentId[i] !== "") {
+        category.parentId = parentId[i];
+      }
+
+      const updatedCatImg = getCatImage(_id[i]);
+
+      if (updatedCatImg) {
+        category.categoryImage = "/static/" + updatedCatImg.filename;
+      }
+
+      await Category.findOneAndUpdate(
+        { _id: _id[i] },
+        category,
+        { new: true },
+        (err, updatedCat) => {
+          if (err) {
+            return res.status(400).json({
+              error: err,
+            });
+          }
+
+          if (updatedCat) {
+            updatedCategories.push(updatedCat);
+          } else {
+            return res.status(400).json({
+              error: "Some error occured while updating categories.",
+            });
+          }
+        }
+      );
+    }
+    return res.status(201).json({ data: updatedCategories });
+  } else {
+    const category = {
+      categoryName,
+      slud: slugify(categoryName),
+      categoryImage: req.files[0] ? "/static/" + req.files[0].filename : "",
+    };
+    if (parentId !== "") {
+      category.parentId = parentId;
+    }
+    await Category.findOneAndUpdate(
+      { _id },
+      category,
+      {
+        new: true,
+      },
+      (err, updatedCat) => {
+        if (err) {
+          console.log(err);
+          return res.status(400).json({
+            error: err,
+          });
+        }
+
+        if (updatedCat) {
+          return res.status(201).json({ data: updatedCat });
+        } else {
+          return res.status(400).json({
+            error: "Some error occured while updating categories.",
+          });
+        }
+      }
+    );
+  }
 };

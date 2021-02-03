@@ -1,9 +1,11 @@
 const User = require("../../models/user");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const { nanoid } = require("nanoid");
 
 // signup controller
 exports.signup = async (req, res) => {
-  await User.findOne({ email: req.body.email }).exec((err, user) => {
+  await User.findOne({ email: req.body.email }).exec(async (err, user) => {
     if (user) {
       return res.status(400).json({
         error: `${req.body.email} is already registered.`,
@@ -14,27 +16,34 @@ exports.signup = async (req, res) => {
     // destructure the request data first
     const { firstName, middleName, lastName, email, password } = req.body;
 
+    const password_hash = await bcrypt.hash(password, 10);
+
     const _user = new User({
       firstName,
       middleName,
       lastName,
       email,
-      password,
-      username: Math.random().toString(),
+      password_hash,
+      username: nanoid(),
       role: "admin",
+      profilePicture: req.file ? "/private/" + req.file.filename : "",
     });
 
     _user.save((err, data) => {
       if (err) {
-        console.log(err);
         return res.status(400).json({
-          error: `Something went wrong, couldn't create admin. [code: srcoadau]`,
+          error: err,
         });
       }
 
       if (data) {
         return res.status(201).json({
           data: "Admin created successfully.",
+        });
+      } else {
+        return res.status(400).json({
+          error:
+            "Couldn't register new user. If problem persistes, please contact developer.",
         });
       }
     });
@@ -43,7 +52,7 @@ exports.signup = async (req, res) => {
 
 // login controller
 exports.login = async (req, res) => {
-  await User.findOne({ email: req.body.email }).exec((err, user) => {
+  await User.findOne({ email: req.body.email }).exec(async (err, user) => {
     if (err) {
       return res.status(400).json({
         error: `User with email ${req.body.email} isn't registered.`,
@@ -52,7 +61,10 @@ exports.login = async (req, res) => {
 
     // --- else continue logging in ---
     if (user) {
-      if (user.authenticate(req.body.password) && user.role === "admin") {
+      if (
+        (await user.authenticate(req.body.password)) &&
+        user.role === "admin"
+      ) {
         const token = jwt.sign(
           {
             _id: user._id,
@@ -91,8 +103,8 @@ exports.login = async (req, res) => {
         });
       } else {
         if (user.role !== "admin") {
-          return res.status(400).json({
-            error: "Oops, User is not an admin.",
+          return res.status(403).json({
+            error: "Access denied, user is not an admin.",
           });
         } else {
           // password didn't match
@@ -102,8 +114,8 @@ exports.login = async (req, res) => {
         }
       }
     } else {
-      return res.status(400).json({
-        error: `Error: You are not registered as an admin.`,
+      return res.status(404).json({
+        error: `Error: Account not found. Try creating an account first.`,
       });
     }
   });

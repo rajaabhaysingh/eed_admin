@@ -1,12 +1,12 @@
 const { check, validationResult } = require("express-validator");
 
 exports.validateAuthSignupRequest = [
-  check("firstName").notEmpty().withMessage("Firstname cannot be empty"),
-  check("lastName").notEmpty().withMessage("Lastname cannot be empty"),
-  check("email").isEmail().withMessage("Invalid email address"),
+  check("firstName").notEmpty().withMessage("Firstname cannot be empty."),
+  check("lastName").notEmpty().withMessage("Lastname cannot be empty."),
+  check("email").isEmail().withMessage("Invalid email address."),
   check("password")
     .isLength({ min: 8 })
-    .withMessage("Password must be 8 characters long"),
+    .withMessage("Password must be atleast 8 characters long."),
 ];
 
 exports.validateAuthLoginRequest = [

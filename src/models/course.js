@@ -14,8 +14,8 @@ const courseSchema = new mongoose.Schema(
     },
     level: {
       type: String,
-      enum: ["Basic", "Intermediate", "Advanced"],
-      default: "Basic",
+      enum: ["Beginner", "Intermediate", "Advanced", "For everyone"],
+      default: "For everyone",
     },
     slug: {
       type: String,
@@ -27,8 +27,12 @@ const courseSchema = new mongoose.Schema(
     },
     desc: {
       type: String,
-      require: true,
+      required: true,
       trim: true,
+    },
+    isFreezed: {
+      type: Boolean,
+      default: false,
     },
     prerequisites: [
       {
@@ -41,8 +45,39 @@ const courseSchema = new mongoose.Schema(
     },
     thumbnail: {
       type: String,
-      required: true,
     },
+    language: {
+      type: String,
+      enum: ["English", "Tamil", "Telugu", "Hindi"],
+      default: "English",
+    },
+    features: [
+      {
+        feature: {
+          type: String,
+          trim: true,
+        },
+      },
+    ],
+    outline: [
+      {
+        mainTopic: {
+          type: String,
+          trim: true,
+        },
+        subTopics: [
+          {
+            subTopic: [
+              {
+                type: String,
+                trim: true,
+                required: true,
+              },
+            ],
+          },
+        ],
+      },
+    ],
     modules: [
       {
         moduleNo: {
@@ -83,9 +118,22 @@ const courseSchema = new mongoose.Schema(
               ref: "User",
               required: true,
             },
-            mediaFiles: [
+            media: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Video",
+            },
+            programs: [
               {
-                type: String,
+                language: {
+                  type: String,
+                  trim: true,
+                  required: true,
+                },
+                code: {
+                  type: String,
+                  trim: true,
+                  required: true,
+                },
               },
             ],
           },
@@ -99,13 +147,65 @@ const courseSchema = new mongoose.Schema(
           required: true,
           trim: true,
         },
-        picture: {
-          type: String,
-        },
         designation: {
           type: String,
           trim: true,
         },
+      },
+    ],
+    exercises: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        desc: {
+          type: String,
+          trim: true,
+        },
+        addedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        problems: [
+          {
+            question: {
+              type: String,
+              required: true,
+              trim: true,
+            },
+            options: [
+              {
+                type: String,
+                trim: true,
+              },
+            ],
+            answer: {
+              type: String,
+              trim: true,
+            },
+            explanation: {
+              type: String,
+              trim: true,
+            },
+            programs: [
+              {
+                language: {
+                  type: String,
+                  trim: true,
+                  required: true,
+                },
+                code: {
+                  type: String,
+                  trim: true,
+                  required: true,
+                },
+              },
+            ],
+          },
+        ],
       },
     ],
     faqs: [
@@ -129,9 +229,37 @@ const courseSchema = new mongoose.Schema(
         review: String,
       },
     ],
+    ratings: {
+      oneStar: {
+        type: Number,
+        default: 0,
+      },
+      twoStar: {
+        type: Number,
+        default: 0,
+      },
+      threeStar: {
+        type: Number,
+        default: 0,
+      },
+      fourStar: {
+        type: Number,
+        default: 0,
+      },
+      fiveStar: {
+        type: Number,
+        default: 0,
+      },
+    },
     lastUpdated: Date,
+    enrollments: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
+
+// getting virtual field noOfEnrollments
+courseSchema.virtual("noOfEnrollments").get(function () {
+  return this.enrollments.length;
+});
 
 module.exports = mongoose.model("Course", courseSchema);

@@ -1,9 +1,11 @@
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const { nanoid } = require("nanoid");
+const bcrypt = require("bcrypt");
 
 // signup controller
 exports.signup = (req, res) => {
-  User.findOne({ email: req.body.email }).exec((err, user) => {
+  User.findOne({ email: req.body.email }).exec(async (err, user) => {
     if (err) {
       return res.status(400).json({
         error: `Some error occured during signup process. [code: srcoau]`,
@@ -20,20 +22,23 @@ exports.signup = (req, res) => {
     // destructure the request data first
     const { firstName, middleName, lastName, email, password } = req.body;
 
+    const password_hash = await bcrypt.hash(password, 10);
+
     const _user = new User({
       firstName,
       middleName,
       lastName,
       email,
-      password,
-      username: Math.random().toString(),
+      password_hash,
+      username: nanoid(),
+      role: "user",
+      profilePicture: req.file ? "/private/" + req.file.filename : "",
     });
 
     _user.save((err, data) => {
       if (err) {
-        console.log(err);
         return res.status(400).json({
-          error: `Something went wrong, couldn't create user. [code: srcoau]`,
+          error: err,
         });
       }
 
@@ -41,14 +46,24 @@ exports.signup = (req, res) => {
         return res.status(201).json({
           data: "User created successfully.",
         });
+      } else {
+        return res.status(400).json({
+          error:
+            "Couldn't register new user. If problem persistes, please contact developer.",
+        });
       }
     });
   });
 };
 
 // login controller
-exports.login = (req, res) => {
-  User.findOne({ email: req.body.email }).exec((err, user) => {
+exports.login = async (req, res) => {
+  if (!req.body.reCAPTCHA) {
+    return res.status(400).json({
+      error: "reCAPTCHA verification failed.",
+    });
+  }
+  await User.findOne({ email: req.body.email }).exec(async (err, user) => {
     if (err) {
       return res.status(400).json({
         error: `User with email ${req.body.email} isn't registered.`,
@@ -57,7 +72,10 @@ exports.login = (req, res) => {
 
     // --- else continue logging in ---
     if (user) {
-      if (user.authenticate(req.body.password)) {
+      if (
+        (await user.authenticate(req.body.password)) &&
+        user.role === "user"
+      ) {
         const token = jwt.sign(
           {
             _id: user._id,
@@ -79,6 +97,8 @@ exports.login = (req, res) => {
           profilePicture,
         } = user;
 
+        res.cookie("token", token, { expiresIn: "1d" });
+
         res.status(200).json({
           token,
           data: {
@@ -89,18 +109,25 @@ exports.login = (req, res) => {
             role,
             email,
             fullname,
-            profilePicture,
+            profilePicture: profilePicture,
           },
         });
       } else {
-        // password didn't match
-        return res.status(400).json({
-          error: "Invalid email/password.",
-        });
+        if (user.role !== "user") {
+          return res.status(403).json({
+            error:
+              "Oops, something went wrong unexpectedly. code[access denied]",
+          });
+        } else {
+          // password didn't match
+          return res.status(400).json({
+            error: "Error: Invalid email/password.",
+          });
+        }
       }
     } else {
-      return res.status(400).json({
-        error: `Something went wrong. [code: srcoau]`,
+      return res.status(404).json({
+        error: `You are not registered. Try creating an account first.`,
       });
     }
   });

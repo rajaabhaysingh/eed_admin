@@ -19,7 +19,11 @@ env.config();
 app.use(cors());
 app.use(express.json());
 app.use("/static", express.static(path.join(__dirname, "uploads")));
-app.use("/course-content", express.static(path.join(__dirname, "uploads")));
+app.use("/private", express.static(path.join(__dirname, "profile_pic")));
+app.use(
+  "/course-content",
+  express.static(path.join(__dirname, "course_content"))
+);
 app.use("/api", authRoutes);
 app.use("/api", adminRoutes);
 app.use("/api", categoryRoutes);
@@ -34,6 +38,7 @@ mongoose
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
+      useFindAndModify: false,
     }
   )
   .then((res) => {

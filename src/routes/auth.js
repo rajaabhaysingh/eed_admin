@@ -1,4 +1,8 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const slugify = require("slugify");
+const { nanoid } = require("nanoid");
 const { signup, login } = require("../controllers/auth");
 const {
   validateAuthSignupRequest,
@@ -8,21 +12,28 @@ const {
 
 const router = express.Router();
 
+// saving video files inside profile_pic
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(path.dirname(__dirname), "profile_pic"));
+  },
+  filename: function (req, file, cb) {
+    cb(null, nanoid() + "-" + slugify(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
+
 // login process
 router.post("/login", validateAuthLoginRequest, isAuthRequestValidated, login);
 
 // signup process
 router.post(
   "/signup",
+  upload.single("profilePicture"),
   validateAuthSignupRequest,
   isAuthRequestValidated,
   signup
 );
-
-// router.post("/profile", requireSignIn, (req, res) => {
-//   res.status(200).json({
-//     message: "Inside profile",
-//   });
-// });
 
 module.exports = router;
