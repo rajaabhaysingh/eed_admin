@@ -33,6 +33,7 @@ exports.signup = (req, res) => {
       username: nanoid(),
       role: "user",
       profilePicture: req.file ? "/private/" + req.file.filename : "",
+      coursesBought: [],
     });
 
     _user.save((err, data) => {
@@ -95,6 +96,7 @@ exports.login = async (req, res) => {
           email,
           fullname,
           profilePicture,
+          coursesBought,
         } = user;
 
         res.cookie("token", token, { expiresIn: "1d" });
@@ -110,6 +112,7 @@ exports.login = async (req, res) => {
             email,
             fullname,
             profilePicture: profilePicture,
+            coursesBought,
           },
         });
       } else {

@@ -4,6 +4,7 @@ const {
   addCategory,
   getCategories,
   updateCategories,
+  deleteCategories,
 } = require("../controllers/categories");
 const multer = require("multer");
 const { nanoid } = require("nanoid");
@@ -46,6 +47,13 @@ router.put(
   validateAddCategory,
   isAddCategoryRequestValidated,
   updateCategories
+);
+
+router.delete(
+  "/category/delete",
+  requireSignIn,
+  adminMiddleware,
+  deleteCategories
 );
 
 module.exports = router;

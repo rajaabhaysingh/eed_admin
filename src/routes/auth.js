@@ -25,6 +25,15 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // login process
+/**
+ * @swagger
+ * /api/login:
+ *  post:
+ *    description: Use to request all customers
+ *    responses:
+ *      '201':
+ *        description: A successful response
+ */
 router.post("/login", validateAuthLoginRequest, isAuthRequestValidated, login);
 
 // signup process

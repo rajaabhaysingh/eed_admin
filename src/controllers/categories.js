@@ -39,21 +39,6 @@ exports.addCategory = async (req, res) => {
     slug: `${slugify(req.body.categoryName)}`,
   };
 
-  // if category with same name already exists
-  await Category.findOne({ slug: categoryObj.slug }).exec((err, category) => {
-    if (err) {
-      return res.status(400).json({
-        error: err,
-      });
-    }
-
-    if (category) {
-      return res.status(400).json({
-        error: `Category with name ${categoryObj.categoryName} already exists.`,
-      });
-    }
-  });
-
   if (req.file) {
     categoryObj.categoryImage = "/static/" + req.file.filename;
   }
@@ -176,5 +161,23 @@ exports.updateCategories = async (req, res) => {
         }
       }
     );
+  }
+};
+
+// delete single/multiple categories at once
+exports.deleteCategories = async (req, res) => {
+  const payload = req.body;
+  const deletedCategories = [];
+
+  for (let i = 0; i < payload.length; i++) {
+    const deletedCat = await Category.findByIdAndDelete(payload[i]);
+    deletedCategories.push(deletedCat);
+  }
+  if (deletedCategories.length == payload.length) {
+    return res.status(200).json({ data: deletedCategories });
+  } else {
+    return res.status(400).json({
+      error: "Some error occured while deleting categories.",
+    });
   }
 };

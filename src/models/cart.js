@@ -13,10 +13,6 @@ const cartSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Course",
         },
-        price: {
-          type: Number,
-          default: 0,
-        },
       },
     ],
   },

@@ -1,0 +1,63 @@
+{
+    "entity": "event",
+    "account_id": "acc_FLgNEPliASvCkw",
+    "event": "order.paid",
+    "contains": [
+        "payment",
+        "order"
+    ],
+    "payload": {
+        "payment": {
+            "entity": {
+                "id": "pay_Gd4WmxXd51jCJp",
+                "entity": "payment",
+                "amount": 1431000,
+                "currency": "INR",
+                "status": "captured",
+                "order_id": "order_Gd4WWCuhjTG05I",
+                "invoice_id": null,
+                "international": false,
+                "method": "netbanking",
+                "amount_refunded": 0,
+                "refund_status": null,
+                "captured": true,
+                "description": "Test Transaction",
+                "card_id": null,
+                "bank": "KKBK",
+                "wallet": null,
+                "vpa": null,
+                "email": "souravanand@gmail.user",
+                "contact": "+919090909090",
+                "notes": [],
+                "fee": 33772,
+                "tax": 5152,
+                "error_code": null,
+                "error_description": null,
+                "error_source": null,
+                "error_step": null,
+                "error_reason": null,
+                "acquirer_data": {
+                    "bank_transaction_id": "9608564"
+                },
+                "created_at": 1613658997
+            }
+        },
+        "order": {
+            "entity": {
+                "id": "order_Gd4WWCuhjTG05I",
+                "entity": "order",
+                "amount": 1431000,
+                "amount_paid": 1431000,
+                "amount_due": 0,
+                "currency": "INR",
+                "receipt": "602e7807e047c9a50ae3b10f#dFMSzBeCm8",
+                "offer_id": null,
+                "status": "paid",
+                "attempts": 1,
+                "notes": [],
+                "created_at": 1613658982
+            }
+        }
+    },
+    "created_at": 1613659000
+}
